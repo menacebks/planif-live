@@ -1,8 +1,10 @@
-# Planif'Live
+# TikToc Events
 
 L'agenda partagé des créateurs TikTok : lives, battles, collabs, Q&A, défis et meetups IRL.
 Chacun peut publier un événement, s'inscrire avec son @pseudo, copier une annonce pour sa bio
 et ajouter l'événement à Google Agenda. Aucun compte n'est demandé aux visiteurs.
+
+Site indépendant, non affilié à TikTok.
 
 Site en ligne : https://menacebks.github.io/planif-live/
 

@@ -1,4 +1,4 @@
-// Configuration Firebase du projet planif-live.
+// Configuration Firebase du projet planif-live (site TikToc Events).
 // Ces valeurs sont publiques par conception : la sécurité repose sur firestore.rules.
 window.PLANIF_CONFIG = {
   apiKey: "AIzaSyBQgFmjAiygifZF7koOLHIYUKWYolmemzY",

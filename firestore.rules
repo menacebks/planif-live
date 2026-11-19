@@ -1,0 +1,46 @@
+rules_version = '2';
+// Planif'Live : règles de sécurité Firestore.
+// À coller dans Firebase > Firestore Database > Règles, puis « Publier ».
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function str(v, min, max) { return v is string && v.size() >= min && v.size() <= max; }
+
+    // Événements : tout le monde lit, chacun publie en son nom et ne supprime que les siens.
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['type','title','host','startAt','dur','place','tags','descr','cap','creator','createdAt'])
+        && request.resource.data.creator == request.auth.uid
+        && request.resource.data.type in ['live','battle','irl','collab','qa','defi']
+        && str(request.resource.data.title, 1, 80)
+        && str(request.resource.data.host, 2, 31)
+        && request.resource.data.startAt is number
+        && request.resource.data.startAt > request.time.toMillis() - 3600000
+        && request.resource.data.dur is int && request.resource.data.dur >= 15 && request.resource.data.dur <= 600
+        && str(request.resource.data.place, 0, 120)
+        && str(request.resource.data.tags, 0, 80)
+        && str(request.resource.data.descr, 0, 400)
+        && (request.resource.data.cap == null
+            || (request.resource.data.cap is int && request.resource.data.cap >= 1 && request.resource.data.cap <= 100000))
+        && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.creator == request.auth.uid;
+    }
+
+    // Inscriptions : une par personne et par événement, chacun ne gère que la sienne.
+    match /rsvps/{rsvpId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['eventId','uid','handle','at'])
+        && request.resource.data.uid == request.auth.uid
+        && rsvpId == request.resource.data.eventId + '_' + request.auth.uid
+        && str(request.resource.data.handle, 2, 31)
+        && request.resource.data.at is number
+        && exists(/databases/$(database)/documents/events/$(request.resource.data.eventId));
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+  }
+}

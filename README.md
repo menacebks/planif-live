@@ -4,27 +4,26 @@ L'agenda partagé des créateurs TikTok : lives, battles, collabs, Q&A, défis e
 Chacun peut publier un événement, s'inscrire avec son @pseudo, copier une annonce pour sa bio
 et ajouter l'événement à Google Agenda. Aucun compte n'est demandé aux visiteurs.
 
+Site en ligne : https://menacebks.github.io/planif-live/
+
 - `index.html` : le site (une seule page, sans étape de build)
-- `config.js` : l'adresse et la clé publique de ton projet Supabase
-- `supabase/schema.sql` : les tables, les règles de sécurité et les limites anti-abus
+- `config.js` : la configuration publique de ton projet Firebase
+- `firestore.rules` : les règles de sécurité de la base
+- `.github/workflows/pages.yml` : met le site en ligne à chaque envoi sur `main`
 
 Tant que `config.js` n'est pas rempli, le site tourne en **mode démo** : les événements restent sur l'appareil.
 
-## 1. Créer la base Supabase (gratuit)
+## Configurer Firebase (gratuit, avec ton compte Google)
 
-1. Crée un compte sur https://supabase.com puis un nouveau projet.
-2. **SQL Editor > New query** : colle le contenu de `supabase/schema.sql` et clique sur **Run**.
-3. **Authentication > Sign In / Providers** : active **Allow anonymous sign-ins**.
-   C'est ce qui permet aux visiteurs de publier sans créer de compte, tout en ne pouvant supprimer que leurs propres événements.
-4. **Project Settings > API** : copie la **Project URL** et la clé **anon public** dans `config.js`.
-
-## 2. Mettre le site en ligne avec GitHub Pages (gratuit)
-
-1. Crée un dépôt sur GitHub et envoie-y ces fichiers.
-2. Dans le dépôt : **Settings > Pages > Source : Deploy from a branch**, branche `main`, dossier `/ (root)`.
-3. Après une minute, le site est en ligne à `https://<ton-compte>.github.io/<nom-du-depot>/`.
-
-Netlify fonctionne aussi : glisse le dossier sur https://app.netlify.com/drop.
+1. Va sur https://console.firebase.google.com et clique sur **Créer un projet**.
+   Nomme-le `planif-live`. Tu peux désactiver Google Analytics.
+2. **Créer > Authentication > Commencer**, onglet **Mode de connexion** : active **Anonyme** et enregistre.
+3. **Créer > Firestore Database > Créer une base de données** : choisis l'emplacement `eur3 (europe)`,
+   puis **Démarrer en mode production**.
+4. Onglet **Règles** de Firestore : remplace tout par le contenu de `firestore.rules` puis clique sur **Publier**.
+5. Roue dentée **Paramètres du projet > Général**, en bas : clique sur l'icône **</>** (Web),
+   nomme l'appli `planif-live` (sans cocher Hosting), puis copie l'objet `firebaseConfig` dans `config.js`.
+6. **Authentication > Paramètres > Domaines autorisés** : ajoute `menacebks.github.io`.
 
 ## Tester en local
 
@@ -37,7 +36,7 @@ Puis ouvre http://localhost:8000.
 ## Sécurité et modération
 
 - Tout le monde peut lire l'agenda. Chacun ne peut supprimer que ses propres événements et inscriptions.
-- 10 événements maximum par personne et par jour, et une inscription est refusée quand l'événement est complet.
-- Pour retirer un événement abusif : **Supabase > Table Editor > events**, supprime la ligne.
-- Pour limiter les robots, tu peux activer un captcha dans **Authentication > Attack Protection**
-  (il faudra alors ajouter le widget captcha à la page).
+- Les champs sont vérifiés côté serveur (longueurs, types d'événement, dates).
+- La limite de places est vérifiée dans la page, pas par le serveur : un visiteur malin pourrait la dépasser.
+- Pour retirer un événement abusif : **Firestore Database > Données > events**, supprime le document.
+- Contre les robots, tu peux activer **App Check** dans la console Firebase.
